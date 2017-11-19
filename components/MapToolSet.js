@@ -26,36 +26,31 @@ class MapToolSet extends React.Component {
                 zoom: 2
             })
         });
-        console.log(this.state.map.getLayers().getArray()[0].type);
-//         const layers = this.state.layers;
-//         const map = this.state.map;
-//         this.state.dynamic_field = document.getElementById('dynamic-field');
-//         this.state.dynamic_field.onchange = function () {
-//             const value = dynamic_field.value;
-//             console.log(value);
-//             const format = new ol.format.WKT();
-//             const feature = format.readFeature(value, {
-//                 dataProjection:
-//                     'EPSG:32633',
-// //                'EPSG:4326',
-//                 featureProjection:
-// //                'EPSG:32633'
-//                     'EPSG:3857'
-//             });
-//             console.log(feature);
-//             const vector = new ol.layer.Vector({
-//                 source: new ol.source.Vector({
-//                     features: [feature]
-//                 })
-//             });
-//             const layer = map.addLayer(vector);
-//             layers.push(layer);
-//             map.changed();
-//         };
+        this.addLayer = this.addLayer.bind(this)
     }
 
     addLayer(e) {
-        console.log(e.target.value);
+        const value = e.target.value;
+        console.log(value);
+        const format = new ol.format.WKT();
+        const feature = format.readFeature(value, {
+            dataProjection:
+                'EPSG:32633',
+//                'EPSG:4326',
+            featureProjection:
+//                'EPSG:32633'
+                'EPSG:3857'
+        });
+        console.log(feature);
+        const vector = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [feature]
+            })
+        });
+        const layer = this.state.map.addLayer(vector);
+        this.state.map.changed();
+        e.target.value = '';
+        this.forceUpdate();
     }
 
     render() {
@@ -66,7 +61,7 @@ class MapToolSet extends React.Component {
                            id="dynamic-field"
                            multiple className="multi-select fa"
                            placeholder="Input..."
-                           onChange={this.addLayer}/>
+                           onBlur={this.addLayer}/>
                     {this.state.map.getLayers().getArray().map((layer, n) => <div key={n}>{layer.type}</div>)}
                 </div>
             </div>
