@@ -28,77 +28,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
 <script src="https://openlayers.org/en/v4.5.0/build/ol.js"></script>
-<script>
-    var extent = {
-//        'EPSG:3857': [20037508.34, 20037508.34, 20037508.34, 20037508.34],
-        'EPSG:32633': [-2500000, 3500000, 3045984, 9045984]
-    };
-    proj4.defs('EPSG:32633',"+proj=utm +zone=33 +datum=WGS84 +units=m +no_defs");
-    if (!ol.proj.get('EPSG:32633')) {
-        console.error("Failed to register projection in OpenLayers");
-    }
-//    var sProjection = 'EPSG:32633';
-//    var projection = new ol.proj.Projection({
-//        code: sProjection,
-//        extent: extent[sProjection]
-//    });
-//    ol.proj.addProjection(projection);
-
-    var map = new ol.Map({
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
-            })
-        ],
-        target: 'map',
-        controls: ol.control.defaults({
-            attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-                collapsible: false
-            })
-        }),
-        view: new ol.View({
-            center: [0, 0],
-            zoom: 2
-        })
-    });
-
-    console.log(map.getView().getProjection());
-
-    document.getElementById('zoom-out').onclick = function() {
-        var view = map.getView();
-        var zoom = view.getZoom();
-        view.setZoom(zoom - 1);
-    };
-
-    document.getElementById('zoom-in').onclick = function() {
-        var view = map.getView();
-        var zoom = view.getZoom();
-        view.setZoom(zoom + 1);
-    };
-    
-    var dynamic_field = document.getElementById('dynamic-field');
-    dynamic_field.onchange = function (input) {
-        var value = dynamic_field.value;
-        console.log(value);
-        var format = new ol.format.WKT();
-        var feature = format.readFeature(value, {
-            dataProjection:
-                'EPSG:32633',
-//                'EPSG:4326',
-            featureProjection:
-//                'EPSG:32633'
-                'EPSG:3857'
-        });
-        console.log(feature);
-        var vector = new ol.layer.Vector({
-            source: new ol.source.Vector({
-                features: [feature]
-            })
-        });
-        map.addLayer(vector);
-        map.changed();
-    };
-</script>
+<script src="application.jsx"></script>
 </body>
 <!-- POLYGON((10.689 -25.092, 34.595 -20.170, 38.814 -35.639, 13.502 -39.155, 10.689 -25.092)) -->
 <!-- LINESTRING (642942.157951605 7718201.2077685, 642937.899902344 7718199.10009766, 642937.883630072 7718199.09212204) -->
