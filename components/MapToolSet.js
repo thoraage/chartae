@@ -26,11 +26,12 @@ class MapToolSet extends React.Component {
                 zoom: 2
             })
         });
-        this.addLayer = this.addLayer.bind(this)
+        this.addLayer = this.addLayer.bind(this);
+        this.removeLayer = this.removeLayer.bind(this);
     }
 
-    addLayer(e) {
-        const value = e.target.value;
+    addLayer(event) {
+        const value = event.target.value;
         console.log(value);
         const format = new ol.format.WKT();
         const feature = format.readFeature(value, {
@@ -47,26 +48,49 @@ class MapToolSet extends React.Component {
                 features: [feature]
             })
         });
+        let style = new ol.style.Style();
+        let stroke = new ol.style.Stroke();
+        stroke.setColor(randomColor());
+        stroke.setWidth(5);
+        style.setStroke(stroke);
+        vector.setStyle(style);
         const layer = this.state.map.addLayer(vector);
         this.state.map.changed();
-        e.target.value = '';
+        event.target.value = '';
+        this.forceUpdate();
+    }
+
+    removeLayer(layer) {
+        this.state.map.removeLayer(layer);
         this.forceUpdate();
     }
 
     render() {
+        function layerItem(layer, n) {
+            return <li className="list-group-item" key={n}>
+                <span>{layer.type}</span>
+                <a href="#" onClick={() => this.removeLayer(layer)}>
+                    <i className="fa fa-times-circle"></i>
+                </a>
+            </li>;
+        }
         return (
-            <div>
-                <div className="dynamic-area">
-                    <input type="text"
-                           id="dynamic-field"
-                           multiple className="multi-select fa"
-                           placeholder="Input..."
-                           onBlur={this.addLayer}/>
-                    {this.state.map.getLayers().getArray().map((layer, n) => <div key={n}>{layer.type}</div>)}
-                </div>
+            <div className="dynamic-area">
+                <input type="text"
+                       id="dynamic-field"
+                       multiple className="multi-select fa"
+                       placeholder="Input..."
+                       onBlur={this.addLayer}/>
+                <ul className="list-group">
+                    {this.state.map.getLayers().getArray().map((layer, n) => layerItem(layer, n))}
+                </ul>
             </div>
         );
     }
+}
+
+function randomColor() {
+    return '#' + [7,0,7,0,7,0].map(n => Math.random() * (16-n) + n).map(n => Math.floor(n).toString(16)).join('');
 }
 
 // const MapToolSet = () => {
