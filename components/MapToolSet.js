@@ -28,6 +28,7 @@ class MapToolSet extends React.Component {
         });
         this.addLayer = this.addLayer.bind(this);
         this.removeLayer = this.removeLayer.bind(this);
+        this.highlightLayer = this.highlightLayer.bind(this);
     }
 
     addLayer(event) {
@@ -54,7 +55,7 @@ class MapToolSet extends React.Component {
         stroke.setWidth(5);
         style.setStroke(stroke);
         vector.setStyle(style);
-        const layer = this.state.map.addLayer(vector);
+        this.state.map.addLayer(vector);
         this.state.map.changed();
         event.target.value = '';
         this.forceUpdate();
@@ -65,12 +66,30 @@ class MapToolSet extends React.Component {
         this.forceUpdate();
     }
 
+    highlightLayer(layer, highlight) {
+        if (layer.type !== 'TILE') {
+            let stroke = layer.getStyle().getStroke();
+            if (highlight) {
+                stroke.setWidth(10);
+            } else {
+                stroke.setWidth(5);
+            }
+            console.log(highlight);
+            console.log(layer);
+            this.state.map.changed();
+        }
+    }
+
     render() {
+        const that = this;
         function layerItem(layer, n) {
-            return <li className="list-group-item" key={n}>
+            return <li className="list-group-item"
+                       onMouseEnter={() => that.highlightLayer(layer, true)}
+                       onMouseLeave={() => that.highlightLayer(layer, false)}
+                       key={n}>
                 <span>{layer.type}</span>
-                <a href="#" onClick={() => this.removeLayer(layer)}>
-                    <i className="fa fa-times-circle"></i>
+                <a href="#" onClick={() => that.removeLayer(layer)}>
+                    <i className="fa fa-times-circle"/>
                 </a>
             </li>;
         }
