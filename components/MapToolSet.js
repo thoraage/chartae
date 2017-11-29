@@ -9,7 +9,7 @@ class MapToolSet extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
-        this.state.map = new ol.Map({
+        const map = new ol.Map({
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.OSM()
@@ -26,10 +26,19 @@ class MapToolSet extends React.Component {
                 zoom: 2
             })
         });
+        this.state.map = map;
         this.addLayer = this.addLayer.bind(this);
         this.removeLayer = this.removeLayer.bind(this);
         this.highlightLayer = this.highlightLayer.bind(this);
         this.hideLayer = this.hideLayer.bind(this);
+        this.state.map.on('pointermove', function(e) {
+            const pixel = map.getEventPixel(e.originalEvent);
+            const features = map.getFeaturesAtPixel(pixel);
+            if (features) {
+                console.log(features);
+                console.log(features.map(f => f.getId()));
+            }
+        });
     }
 
     addLayer(event) {
@@ -38,7 +47,7 @@ class MapToolSet extends React.Component {
             if (!array) {
                 array = [];
             }
-            const idx = str.search(/.LINESTRING/i);
+            const idx = str.search(/.(LINESTRING|POLYGON|POINT)/i);
             if (idx === -1) {
                 if (str) {
                     array.push(str);
