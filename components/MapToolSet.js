@@ -39,6 +39,20 @@ class MapToolSet extends React.Component {
                 console.log(features.map(f => f.getId()));
             }
         });
+        const vector = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: []
+            })
+        });
+        const style = new ol.style.Style();
+        style.pointRadius = 10;
+        const stroke = new ol.style.Stroke();
+        stroke.setColor(randomColor());
+        stroke.setWidth(5);
+        style.setStroke(stroke);
+        vector.setStyle(style);
+        map.addLayer(vector);
+        this.state.currentLayer = vector;
     }
 
     addLayer(event) {
@@ -65,7 +79,7 @@ class MapToolSet extends React.Component {
         const values = split(value);
         console.log(values);
         const format = new ol.format.WKT();
-        values.forEach(value => {
+        const features = values.map(value => {
             const feature = format.readFeature(value, {
                 dataProjection:
                     'EPSG:32633',
@@ -77,21 +91,10 @@ class MapToolSet extends React.Component {
                     'EPSG:3857'
             });
             console.log(feature);
-            const vector = new ol.layer.Vector({
-                source: new ol.source.Vector({
-                features: [feature]
-                })
-            });
-            const style = new ol.style.Style();
-            style.pointRadius = 10;
-            const stroke = new ol.style.Stroke();
-            stroke.setColor(randomColor());
-            stroke.setWidth(5);
-            style.setStroke(stroke);
-            vector.setStyle(style);
-            this.state.map.addLayer(vector);
-            this.state.map.changed();
+            return feature;
         });
+        this.state.currentLayer.getSource().addFeatures(features);
+        this.state.map.changed();
         // this.state.map.setView( new ol.View({
         //     center: vector.,
         //     zoom: 2
