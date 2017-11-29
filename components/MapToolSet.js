@@ -29,6 +29,7 @@ class MapToolSet extends React.Component {
         this.addLayer = this.addLayer.bind(this);
         this.removeLayer = this.removeLayer.bind(this);
         this.highlightLayer = this.highlightLayer.bind(this);
+        this.hideLayer = this.hideLayer.bind(this);
     }
 
     addLayer(event) {
@@ -60,7 +61,8 @@ class MapToolSet extends React.Component {
                 dataProjection:
                     'EPSG:32633',
                    // 'EPSG:4326',
-                   //  'EPSG:3857',
+                  //  'EPSG:3857',
+                  //  'EPSG:3857',
                 featureProjection:
     //                'EPSG:32633'
                     'EPSG:3857'
@@ -108,6 +110,12 @@ class MapToolSet extends React.Component {
         }
     }
 
+    hideLayer(layer) {
+        layer.setVisible(!layer.getVisible());
+        this.forceUpdate();
+        this.state.map.changed();
+    }
+
     render() {
         const that = this;
         function layerItem(layer, n) {
@@ -116,6 +124,11 @@ class MapToolSet extends React.Component {
                        onMouseLeave={() => that.highlightLayer(layer, false)}
                        key={n}>
                 <span>{layer.type}</span>
+                &nbsp;
+                <a href="#" onClick={() => that.hideLayer(layer)}>
+                    <i className={ layer.getVisible() ? "fa fa-eye-slash" : "fa fa-eye" }/>
+                </a>
+                &nbsp;
                 <a href="#" onClick={() => that.removeLayer(layer)}>
                     <i className="fa fa-times-circle"/>
                 </a>
