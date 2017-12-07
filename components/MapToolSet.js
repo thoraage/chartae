@@ -47,7 +47,7 @@ class MapToolSet extends React.Component {
             if (!array) {
                 array = [];
             }
-            const idx = str.search(/.(LINESTRING|POLYGON|POINT)/i);
+            const idx = str.search(/[^a-zA-Z](MULTILINESTRING|LINESTRING|POLYGON|POINT)/i);
             if (idx === -1) {
                 if (str) {
                     array.push(str);
