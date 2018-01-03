@@ -14,15 +14,17 @@ class MapControl extends React.Component {
         this.hideLayer = this.hideLayer.bind(this);
         this.layerCreated = this.layerCreated.bind(this);
         this.layerVisibleChanged = this.layerVisibleChanged.bind(this);
+        this.featuresAdded = this.featuresAdded.bind(this);
 
         PubSub.subscribe(MapOperations.LAYER_CREATED, this.layerCreated);
         PubSub.subscribe(MapOperations.LAYER_VISIBLE_CHANGED, this.layerVisibleChanged);
+        PubSub.subscribe(MapOperations.FEATURES_ADDED, this.featuresAdded);
 
         PubSub.publish(MapOperations.LAYER_CREATE);
     }
 
     layerCreated(msg, layer) {
-        this.state.layers.push({ object: layer, visible: true, type: 'Vector' });
+        this.state.layers.push({ object: layer, visible: true, name: 'Vector ' + this.state.layers.length, featureInfos: [] });
         this.state.currentLayer = layer;
         this.forceUpdate();
     }
@@ -52,6 +54,14 @@ class MapControl extends React.Component {
         console.log(values);
         console.log(this.state);
         PubSub.publish(MapOperations.FEATURES_ADD, { layer: this.state.currentLayer, strings: values });
+    }
+
+    featuresAdded(msg, value) {
+        value.features.forEach(feature => {
+            const layerInfo = this.state.layers.find(layerInfo => layerInfo.object === value.layer);
+            layerInfo.featureInfos.push({ object: feature, visible: true });
+        });
+        this.forceUpdate();
     }
 
     removeLayer(layer) {
@@ -89,20 +99,24 @@ class MapControl extends React.Component {
 
     render() {
         const that = this;
+        function featureItem(featureInfo, n) {
+            return <li className="list-group-item">A</li>
+        }
         function layerItem(layer, n) {
             return <li className="list-group-item"
                        onMouseEnter={() => that.highlightLayer(layer, true)}
                        onMouseLeave={() => that.highlightLayer(layer, false)}
-                       key={n}>
-                <span>{layer.type}</span>
-                &nbsp;
+                       key={n}
+                       width="100%">
+                <i className="fa fa-plus-square"/>&nbsp;
+                <span>{layer.name}</span>&nbsp;
                 <a href="#" onClick={() => that.hideLayer(layer)}>
                     <i className={ layer.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
-                </a>
-                &nbsp;
+                </a>&nbsp;
                 <a href="#" onClick={() => that.removeLayer(layer)}>
                     <i className="fa fa-times-circle"/>
                 </a>
+                <ul className="list-group">{ layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }</ul>
             </li>;
         }
         return (
