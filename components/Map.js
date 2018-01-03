@@ -60,7 +60,11 @@ export default class Map {
             })
         });
         const style = new ol.style.Style();
-        style.pointRadius = 10;
+        style.setImage(new ol.style.Circle({
+            radius: 3,
+            fill: new ol.style.Fill({color: '#666666'}),
+            stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+        }));
         const stroke = new ol.style.Stroke();
         stroke.setColor(randomColor());
         stroke.setWidth(5);
@@ -92,7 +96,6 @@ export default class Map {
         //     center: vector.,
         //     zoom: 2
         // }));
-        event.target.value = '';
         PubSub.publish(MapOperations.FEATURES_ADDED, { layer: value.layer, features: features});
     }
 
