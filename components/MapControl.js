@@ -100,7 +100,18 @@ class MapControl extends React.Component {
     render() {
         const that = this;
         function featureItem(featureInfo, n) {
-            return <li className="list-group-item">A</li>
+            return <button className="btn btn-info" key={n}>A</button>
+        }
+        function featureItems(layer) {
+            if (!layer.featureCollapsed) {
+                return <div className="btn-group btn-group-sm">{ layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }</div>
+            }
+            return null;
+
+        }
+        function collapseFeatures(layer) {
+            layer.featureCollapsed = !layer.featureCollapsed;
+            that.forceUpdate();
         }
         function layerItem(layer, n) {
             return <li className="list-group-item"
@@ -108,15 +119,16 @@ class MapControl extends React.Component {
                        onMouseLeave={() => that.highlightLayer(layer, false)}
                        key={n}
                        width="100%">
-                <i className="fa fa-plus-square"/>&nbsp;
+                <a href="#" onClick={() => collapseFeatures(layer) }>
+                    <i className={ layer.featureCollapsed ? 'fa fa-plus-square' : 'fa fa-minus-square'}/>&nbsp;</a>
                 <span>{layer.name}</span>&nbsp;
                 <a href="#" onClick={() => that.hideLayer(layer)}>
                     <i className={ layer.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
                 </a>&nbsp;
                 <a href="#" onClick={() => that.removeLayer(layer)}>
                     <i className="fa fa-times-circle"/>
-                </a>
-                <ul className="list-group">{ layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }</ul>
+                </a>&nbsp;
+                { featureItems(layer) }
             </li>;
         }
         return (
