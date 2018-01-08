@@ -9,22 +9,28 @@ class MapControl extends React.Component {
         this.state = {};
         this.state.layers = [];
         this.addFeature = this.addFeature.bind(this);
-        this.removeLayer = this.removeLayer.bind(this);
         this.highlightLayer = this.highlightLayer.bind(this);
-        this.hideLayer = this.hideLayer.bind(this);
         this.layerCreated = this.layerCreated.bind(this);
         this.layerVisibleChanged = this.layerVisibleChanged.bind(this);
         this.featuresAdded = this.featuresAdded.bind(this);
 
+        const that = this;
         PubSub.subscribe(MapOperations.LAYER_CREATED, this.layerCreated);
         PubSub.subscribe(MapOperations.LAYER_VISIBLE_CHANGED, this.layerVisibleChanged);
         PubSub.subscribe(MapOperations.FEATURES_ADDED, this.featuresAdded);
+        PubSub.subscribe(MapOperations.LAYER_REMOVED, function(msg, value) {
+            that.state.layers = that.state.layers.filter(layerInfo => layerInfo.layer !== value.layer);
+            if (that.state.layers.length === 0) {
+                PubSub.publish(MapOperations.LAYER_CREATE);
+            }
+            that.forceUpdate();
+        });
 
         PubSub.publish(MapOperations.LAYER_CREATE);
     }
 
     layerCreated(msg, layer) {
-        this.state.layers.push({ object: layer, visible: true, name: 'Vector ' + this.state.layers.length, featureInfos: [] });
+        this.state.layers.push({ layer: layer, visible: true, name: 'Vector ' + this.state.layers.length, featureInfos: [] });
         this.state.currentLayer = layer;
         this.forceUpdate();
     }
@@ -58,20 +64,15 @@ class MapControl extends React.Component {
 
     featuresAdded(msg, value) {
         value.features.forEach(feature => {
-            const layerInfo = this.state.layers.find(layerInfo => layerInfo.object === value.layer);
-            layerInfo.featureInfos.push({ object: feature, visible: true });
+            const layerInfo = this.state.layers.find(layerInfo => layerInfo.layer === value.layer);
+            layerInfo.featureInfos.push({ feature: feature, visible: true });
         });
         this.forceUpdate();
     }
 
-    removeLayer(layer) {
-        this.state.map.removeLayer(layer);
-        this.forceUpdate();
-    }
-
-    highlightLayer(layer, highlight) {
+    highlightLayer(layerInfo, highlight) {
         // TODO implement other end
-        PubSub.publish('layer-hightlight', { layer: layer.object, on: highlight });
+        PubSub.publish('layer-hightlight', { layer: layerInfo.layer, on: highlight });
         // if (layer.type !== 'TILE') {
         //     let stroke = layer.getStyle().getStroke();
         //     if (highlight) {
@@ -85,12 +86,8 @@ class MapControl extends React.Component {
         // }
     }
 
-    hideLayer(layer) {
-        PubSub.publish(MapOperations.LAYER_VISIBLE, { layer: layer.object, on: !layer.visible });
-    }
-
     layerVisibleChanged(msg, value) {
-        const layer = this.state.layers.find(layer => value.layer === layer.object)
+        const layer = this.state.layers.find(layerInfo => value.layer === layerInfo.layer);
         console.log(value);
         console.log(layer);
         layer.visible = value.on;
@@ -113,22 +110,22 @@ class MapControl extends React.Component {
             layer.featureCollapsed = !layer.featureCollapsed;
             that.forceUpdate();
         }
-        function layerItem(layer, n) {
+        function layerItem(layerInfo, n) {
             return <li className="list-group-item"
-                       onMouseEnter={() => that.highlightLayer(layer, true)}
-                       onMouseLeave={() => that.highlightLayer(layer, false)}
+                       onMouseEnter={() => that.highlightLayer(layerInfo, true)}
+                       onMouseLeave={() => that.highlightLayer(layerInfo, false)}
                        key={n}
                        width="100%">
-                <a href="#" onClick={() => collapseFeatures(layer) }>
-                    <i className={ layer.featureCollapsed ? 'fa fa-plus-square' : 'fa fa-minus-square'}/>&nbsp;</a>
-                <span>{layer.name}</span>&nbsp;
-                <a href="#" onClick={() => that.hideLayer(layer)}>
-                    <i className={ layer.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
+                <a href="#" onClick={() => collapseFeatures(layerInfo) }>
+                    <i className={ layerInfo.featureCollapsed ? 'fa fa-plus-square' : 'fa fa-minus-square'}/>&nbsp;</a>
+                <span>{layerInfo.name}</span>&nbsp;
+                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_VISIBLE, { layer: layerInfo.layer, on: !layerInfo.visible }) }>
+                    <i className={ layerInfo.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
                 </a>&nbsp;
-                <a href="#" onClick={() => that.removeLayer(layer)}>
+                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_REMOVE, { layer: layerInfo.layer }) }>
                     <i className="fa fa-times-circle"/>
                 </a>&nbsp;
-                { featureItems(layer) }
+                { featureItems(layerInfo) }
             </li>;
         }
         return (
@@ -139,7 +136,7 @@ class MapControl extends React.Component {
                        placeholder="Input..."
                        onBlur={this.addFeature}/>
                 <ul className="list-group">
-                    {this.state.layers.map((layer, n) => layerItem(layer, n))}
+                    {this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}
                 </ul>
             </div>
         );

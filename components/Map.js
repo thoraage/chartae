@@ -44,12 +44,20 @@ export default class Map {
         PubSub.subscribe(MapOperations.FEATURES_ADD, this.addFeatures);
 
         PubSub.subscribe(MapOperations.LAYER_VISIBLE, function(msg, value) {
-            console.log(value);
-            map.getLayers().getArray().filter(layer => layer === value.layer).forEach(layer => {
-                layer.setVisible(layer.on);
-                map.changed();
-                PubSub.publish(MapOperations.LAYER_VISIBLE_CHANGED, value);
+            map.getLayers().forEach(layer => {
+                if (layer === value.layer) {
+                    layer.setVisible(value.on);
+                    map.changed();
+                    PubSub.publish(MapOperations.LAYER_VISIBLE_CHANGED, value);
+                }
             });
+        });
+
+        PubSub.subscribe(MapOperations.LAYER_REMOVE, function(msg, value) {
+            map.removeLayer(value.layer);
+            map.changed();
+            console.log(value);
+            PubSub.publish(MapOperations.LAYER_REMOVED, value);
         });
     }
 
