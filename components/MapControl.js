@@ -97,11 +97,13 @@ class MapControl extends React.Component {
     render() {
         const that = this;
         function featureItem(featureInfo, n) {
-            return <button className="btn btn-info" key={n}>A</button>
+            return <button className="btn btn-info" key={n}>F</button>
         }
         function featureItems(layer) {
-            if (!layer.featureCollapsed) {
-                return <div className="btn-group btn-group-sm">{ layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }</div>
+            if (!layer.featureCollapsed && layer.featureInfos.length > 0) {
+                return <p className="card-text"><span><div className="btn-group btn-group-sm">
+                        { layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }
+                </div></span></p>;
             }
             return null;
 
@@ -111,21 +113,31 @@ class MapControl extends React.Component {
             that.forceUpdate();
         }
         function layerItem(layerInfo, n) {
-            return <li className="list-group-item"
-                       onMouseEnter={() => that.highlightLayer(layerInfo, true)}
-                       onMouseLeave={() => that.highlightLayer(layerInfo, false)}
-                       key={n}
-                       width="100%">
-                <a href="#" onClick={() => collapseFeatures(layerInfo) }>
-                    <i className={ layerInfo.featureCollapsed ? 'fa fa-plus-square' : 'fa fa-minus-square'}/>&nbsp;</a>
-                <span>{layerInfo.name}</span>&nbsp;
-                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_VISIBLE, { layer: layerInfo.layer, on: !layerInfo.visible }) }>
-                    <i className={ layerInfo.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
-                </a>&nbsp;
-                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_REMOVE, { layer: layerInfo.layer }) }>
-                    <i className="fa fa-times-circle"/>
-                </a>&nbsp;
-                { featureItems(layerInfo) }
+            return <li className="list-group-item" key={n}>
+                <div className="card">
+                    <div className="card-body">
+                        <h5 className="card-title">
+                            <span
+                               onMouseEnter={() => that.highlightLayer(layerInfo, true)}
+                               onMouseLeave={() => that.highlightLayer(layerInfo, false)}
+                               width="100%">
+                                {layerInfo.name}
+                            </span>
+                            <span className="pull-right">
+                                <a href="#" onClick={() => collapseFeatures(layerInfo) }>
+                                    <i className={ layerInfo.featureCollapsed ? 'fa fa-window-minimize' : 'fa fa-window-maximize'}/>
+                                </a>&nbsp;
+                                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_VISIBLE, { layer: layerInfo.layer, on: !layerInfo.visible }) }>
+                                    <i className={ layerInfo.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
+                                </a>&nbsp;
+                                <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_REMOVE, { layer: layerInfo.layer }) }>
+                                    <i className="fa fa-close"/>
+                                </a>
+                            </span>
+                        </h5>
+                        { featureItems(layerInfo) }
+                    </div>
+                </div>
             </li>;
         }
         return (
