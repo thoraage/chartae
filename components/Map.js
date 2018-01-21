@@ -71,7 +71,7 @@ export default class Map {
                 if (layer.type === 'VECTOR') {
                     layer.getSource().getFeatures().forEach(feature => {
                         if (feature === value.feature) {
-                            layer.setStyle(Map.createLineStyle(value.on ? 20 : 5));
+                            feature.setStyle(Map.createLineStyle(value.on));
                         }
                     });
                 }
@@ -86,22 +86,22 @@ export default class Map {
                 features: []
             })
         });
-        const style = Map.createLineStyle(5);
+        const style = Map.createLineStyle(false);
         vector.setStyle(style);
         this.map.addLayer(vector);
         PubSub.publish(MapOperations.LAYER_CREATED, vector);
     }
 
-    static createLineStyle(lineWidth) {
+    static createLineStyle(focus) {
         const style = new ol.style.Style();
         style.setImage(new ol.style.Circle({
-            radius: 3,
+            radius: focus ? 6 : 3,
             fill: new ol.style.Fill({color: '#666666'}),
             stroke: new ol.style.Stroke({color: '#bada55', width: 1})
         }));
         const stroke = new ol.style.Stroke();
         stroke.setColor(randomColor());
-        stroke.setWidth(lineWidth);
+        stroke.setWidth(focus ? 10 : 5);
         style.setStroke(stroke);
         return style;
     }
