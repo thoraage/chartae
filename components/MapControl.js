@@ -9,7 +9,6 @@ class MapControl extends React.Component {
         this.state = {};
         this.state.layers = [];
         this.addFeature = this.addFeature.bind(this);
-        this.highlightLayer = this.highlightLayer.bind(this);
         this.layerCreated = this.layerCreated.bind(this);
         this.layerVisibleChanged = this.layerVisibleChanged.bind(this);
         this.featuresAdded = this.featuresAdded.bind(this);
@@ -18,11 +17,23 @@ class MapControl extends React.Component {
         PubSub.subscribe(MapOperations.LAYER_CREATED, this.layerCreated);
         PubSub.subscribe(MapOperations.LAYER_VISIBLE_CHANGED, this.layerVisibleChanged);
         PubSub.subscribe(MapOperations.FEATURES_ADDED, this.featuresAdded);
+
         PubSub.subscribe(MapOperations.LAYER_REMOVED, function(msg, value) {
             that.state.layers = that.state.layers.filter(layerInfo => layerInfo.layer !== value.layer);
             if (that.state.layers.length === 0) {
                 PubSub.publish(MapOperations.LAYER_CREATE);
             }
+            that.forceUpdate();
+        });
+
+        PubSub.subscribe(MapOperations.FEATURE_FOCUS, function(msg, value) {
+            that.state.layers.forEach(layerInfo => {
+                layerInfo.featureInfos.forEach(featureInfo => {
+                    if (featureInfo.feature === value.feature) {
+                        featureInfo.focused = value.on;
+                    }
+                });
+            });
             that.forceUpdate();
         });
 
@@ -70,20 +81,12 @@ class MapControl extends React.Component {
         this.forceUpdate();
     }
 
-    highlightLayer(layerInfo, highlight) {
-        // TODO implement other end
-        PubSub.publish('layer-hightlight', { layer: layerInfo.layer, on: highlight });
-        // if (layer.type !== 'TILE') {
-        //     let stroke = layer.getStyle().getStroke();
-        //     if (highlight) {
-        //         stroke.setWidth(10);
-        //     } else {
-        //         stroke.setWidth(5);
-        //     }
-        //     console.log(highlight);
-        //     console.log(layer);
-        //     this.state.map.changed();
-        // }
+    static highlightFeature(featureInfo, highlight) {
+        PubSub.publish(MapOperations.FEATURE_FOCUS, { feature: featureInfo.feature, on: highlight })
+    }
+
+    static highlightLayer(layerInfo, highlight) {
+        PubSub.publish(MapOperations.LAYER_HIGHLIGHT, { layer: layerInfo.layer, on: highlight });
     }
 
     layerVisibleChanged(msg, value) {
@@ -97,13 +100,17 @@ class MapControl extends React.Component {
     render() {
         const that = this;
         function featureItem(featureInfo, n) {
-            return <button className="btn btn-info" key={n}>F</button>
+            return <span className={ 'badge badge-pill' + (featureInfo.focused ? ' badge-primary' : ' badge-secondary') } key={n}
+                         onMouseEnter={() => MapControl.highlightFeature(featureInfo, true)}
+                         onMouseLeave={() => MapControl.highlightFeature(featureInfo, false)}>
+                F&nbsp;<i className="fa fa-eye"/>&nbsp;<i className="fa fa-close"/>
+            </span>;
         }
         function featureItems(layer) {
             if (!layer.featureCollapsed && layer.featureInfos.length > 0) {
-                return <p className="card-text"><span><div className="btn-group btn-group-sm">
-                        { layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }
-                </div></span></p>;
+                return <p className="card-text">
+                    { layer.featureInfos.map((featureInfo, n) => featureItem(featureInfo, n)) }
+                </p>;
             }
             return null;
 
@@ -118,17 +125,17 @@ class MapControl extends React.Component {
                     <div className="card-body">
                         <h5 className="card-title">
                             <span
-                               onMouseEnter={() => that.highlightLayer(layerInfo, true)}
-                               onMouseLeave={() => that.highlightLayer(layerInfo, false)}
+                               onMouseEnter={() => MapControl.highlightLayer(layerInfo, true)}
+                               onMouseLeave={() => MapControl.highlightLayer(layerInfo, false)}
                                width="100%">
                                 {layerInfo.name}
                             </span>
                             <span className="pull-right">
                                 <a href="#" onClick={() => collapseFeatures(layerInfo) }>
-                                    <i className={ layerInfo.featureCollapsed ? 'fa fa-window-minimize' : 'fa fa-window-maximize'}/>
+                                    <i className={ 'fa' + (layerInfo.featureCollapsed ? ' fa-window-minimize' : ' fa-window-maximize') }/>
                                 </a>&nbsp;
                                 <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_VISIBLE, { layer: layerInfo.layer, on: !layerInfo.visible }) }>
-                                    <i className={ layerInfo.visible ? "fa fa-eye-slash" : "fa fa-eye" }/>
+                                    <i className={ 'fa' + (layerInfo.visible ? ' fa-eye-slash' : ' fa-eye') }/>
                                 </a>&nbsp;
                                 <a href="#" onClick={() => PubSub.publish(MapOperations.LAYER_REMOVE, { layer: layerInfo.layer }) }>
                                     <i className="fa fa-close"/>

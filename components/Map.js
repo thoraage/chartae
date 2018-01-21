@@ -28,15 +28,21 @@ export default class Map {
         this.map = map;
 
         this.map.on('pointermove', function(e) {
+            const lastFeatures = this.lastFocusFeatures || [];
             const pixel = map.getEventPixel(e.originalEvent);
-            const features = map.getFeaturesAtPixel(pixel);
-            // TODO Cache whether there is anything to clear or not
+            const features = map.getFeaturesAtPixel(pixel) || [];
             PubSub.publish('feature-mouseover-clear');
-            if (features) {
-                console.log(features);
-                console.log(features.map(f => f.getId()));
-                features.forEach(feature => PubSub.publish('feature-mouseover', feature));
-            }
+            features.forEach(feature => {
+                if (!lastFeatures.includes(feature)) {
+                    PubSub.publish(MapOperations.FEATURE_FOCUS, { feature: feature, on: true })
+                }
+            });
+            lastFeatures.forEach(feature => {
+               if (!features.includes(feature)) {
+                   PubSub.publish(MapOperations.FEATURE_FOCUS, { feature: feature, on: false })
+               }
+            });
+            this.lastFocusFeatures = features;
         });
 
         PubSub.subscribe(MapOperations.LAYER_CREATE, this.createLayer);
@@ -59,6 +65,19 @@ export default class Map {
             console.log(value);
             PubSub.publish(MapOperations.LAYER_REMOVED, value);
         });
+
+        PubSub.subscribe(MapOperations.FEATURE_FOCUS, function(msg, value) {
+            map.getLayers().forEach(layer => {
+                if (layer.type === 'VECTOR') {
+                    layer.getSource().getFeatures().forEach(feature => {
+                        if (feature === value.feature) {
+                            layer.setStyle(Map.createLineStyle(value.on ? 20 : 5));
+                        }
+                    });
+                }
+            });
+            map.changed();
+        });
     }
 
     createLayer() {
@@ -67,6 +86,13 @@ export default class Map {
                 features: []
             })
         });
+        const style = Map.createLineStyle(5);
+        vector.setStyle(style);
+        this.map.addLayer(vector);
+        PubSub.publish(MapOperations.LAYER_CREATED, vector);
+    }
+
+    static createLineStyle(lineWidth) {
         const style = new ol.style.Style();
         style.setImage(new ol.style.Circle({
             radius: 3,
@@ -75,11 +101,9 @@ export default class Map {
         }));
         const stroke = new ol.style.Stroke();
         stroke.setColor(randomColor());
-        stroke.setWidth(5);
+        stroke.setWidth(lineWidth);
         style.setStroke(stroke);
-        vector.setStyle(style);
-        this.map.addLayer(vector);
-        PubSub.publish(MapOperations.LAYER_CREATED, vector);
+        return style;
     }
 
     addFeatures(msg, value) {
