@@ -10,4 +10,3 @@ export const FEATURE_FOCUS = 'feature-hightlight';
 
 export const LAYER_REMOVE = 'layer-remove';
 export const LAYER_REMOVED = 'layer-removed';
-export const LAYER_HIGHLIGHT = 'layer-hightlight';

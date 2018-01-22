@@ -81,12 +81,8 @@ class MapControl extends React.Component {
         this.forceUpdate();
     }
 
-    static highlightFeature(featureInfo, highlight) {
+    static focusFeature(featureInfo, highlight) {
         PubSub.publish(MapOperations.FEATURE_FOCUS, { feature: featureInfo.feature, on: highlight })
-    }
-
-    static highlightLayer(layerInfo, highlight) {
-        PubSub.publish(MapOperations.LAYER_HIGHLIGHT, { layer: layerInfo.layer, on: highlight });
     }
 
     layerVisibleChanged(msg, value) {
@@ -101,8 +97,8 @@ class MapControl extends React.Component {
         const that = this;
         function featureItem(featureInfo, n) {
             return <span className={ 'badge badge-pill' + (featureInfo.focused ? ' badge-primary' : ' badge-secondary') } key={n}
-                         onMouseEnter={() => MapControl.highlightFeature(featureInfo, true)}
-                         onMouseLeave={() => MapControl.highlightFeature(featureInfo, false)}>
+                         onMouseEnter={() => MapControl.focusFeature(featureInfo, true)}
+                         onMouseLeave={() => MapControl.focusFeature(featureInfo, false)}>
                 F&nbsp;<i className="fa fa-eye"/>&nbsp;<i className="fa fa-close"/>
             </span>;
         }
@@ -124,10 +120,7 @@ class MapControl extends React.Component {
                 <div className="card">
                     <div className="card-body">
                         <h5 className="card-title">
-                            <span
-                               onMouseEnter={() => MapControl.highlightLayer(layerInfo, true)}
-                               onMouseLeave={() => MapControl.highlightLayer(layerInfo, false)}
-                               width="100%">
+                            <span width="100%">
                                 {layerInfo.name}
                             </span>
                             <span className="pull-right">
