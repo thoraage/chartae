@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/thoraage/chartae#readme",
   "dependencies": {
+    "bootstrap": "^4.0.0",
     "ol": "4.6.4",
+    "popper.js": "^1.12.9",
     "pubsub-js": "^1.6.0",
     "react": "^16.1.1",
     "react-bootstrap": "^0.31.5",

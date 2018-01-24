@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom'
 
 import ol_proj from 'ol/proj'
 
+import Bootstrap from 'bootstrap/dist/css/bootstrap.css';
+
 import MapControlBox from './components/MapControl'
 import Map from './components/Map'
 
