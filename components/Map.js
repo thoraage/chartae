@@ -1,5 +1,18 @@
 import PubSub from 'pubsub-js'
 
+import ol_control from 'ol/control'
+import ol_format_wkt from 'ol/format/wkt'
+import ol_map from 'ol/map'
+import ol_layer_tile from 'ol/layer/tile'
+import ol_layer_vector from 'ol/layer/vector'
+import ol_source_osm from 'ol/source/osm'
+import ol_source_vector from 'ol/source/vector'
+import ol_style from 'ol/style/style'
+import ol_style_circle from 'ol/style/circle'
+import ol_style_fill from 'ol/style/fill'
+import ol_style_stroke from 'ol/style/stroke'
+import ol_view from 'ol/view'
+
 import * as MapOperations from './MapOperations'
 
 export default class Map {
@@ -7,19 +20,19 @@ export default class Map {
         this.createLayer = this.createLayer.bind(this);
         this.addFeatures = this.addFeatures.bind(this);
 
-        const map = new ol.Map({
+        const map = new ol_map({
             layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM()
+                new ol_layer_tile({
+                    source: new ol_source_osm()
                 })
             ],
             target: 'map',
-            controls: ol.control.defaults({
+            controls: ol_control.defaults({
                 attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
                     collapsible: false
                 })
             }),
-            view: new ol.View({
+            view: new ol_view({
                 center: [0, 0],
                 zoom: 2
             })
@@ -81,8 +94,8 @@ export default class Map {
     }
 
     createLayer() {
-        const vector = new ol.layer.Vector({
-            source: new ol.source.Vector({
+        const vector = new ol_layer_vector({
+            source: new ol_source_vector({
                 features: []
             })
         });
@@ -93,13 +106,13 @@ export default class Map {
     }
 
     static createLineStyle(focus) {
-        const style = new ol.style.Style();
-        style.setImage(new ol.style.Circle({
+        const style = new ol_style();
+        style.setImage(new ol_style_circle({
             radius: focus ? 6 : 3,
-            fill: new ol.style.Fill({color: '#666666'}),
-            stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            fill: new ol_style_fill({color: '#666666'}),
+            stroke: new ol_style_stroke({color: '#bada55', width: 1})
         }));
-        const stroke = new ol.style.Stroke();
+        const stroke = new ol_style_stroke();
         stroke.setColor(randomColor());
         stroke.setWidth(focus ? 10 : 5);
         style.setStroke(stroke);
@@ -107,7 +120,7 @@ export default class Map {
     }
 
     addFeatures(msg, value) {
-        const format = new ol.format.WKT();
+        const format = new ol_format_wkt();
         const features = value.strings.map(value => {
             const feature = format.readFeature(value, {
                 dataProjection:
