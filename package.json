@@ -18,13 +18,18 @@
   },
   "homepage": "https://github.com/thoraage/chartae#readme",
   "dependencies": {
+    "@types/proj4": "^2.3.4",
     "bootstrap": "^4.0.0",
+    "file-loader": "^1.1.6",
+    "font-awesome-webpack": "0.0.5-beta.2",
     "ol": "4.6.4",
     "popper.js": "^1.12.9",
+    "proj4": "^2.4.4",
     "pubsub-js": "^1.6.0",
     "react": "^16.1.1",
     "react-bootstrap": "^0.31.5",
-    "react-dom": "^16.1.1"
+    "react-dom": "^16.1.1",
+    "url-loader": "^0.6.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
