@@ -2,12 +2,15 @@ import React from 'react'
 import PubSub from 'pubsub-js'
 
 import * as MapOperations from './MapOperations'
+import {MultiSelect} from 'react-selectize'
+import SelectionController from './SelectionController'
 
 class MapControl extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
         this.state.layers = [];
+        this.state.selectionController = new SelectionController();
         this.addFeature = this.addFeature.bind(this);
         this.layerCreated = this.layerCreated.bind(this);
         this.layerVisibleChanged = this.layerVisibleChanged.bind(this);
@@ -140,18 +143,44 @@ class MapControl extends React.Component {
                 </div>
             </li>;
         }
-        return (
+        const options = ["apple", "mango", "grapes", "melon", "strawberry"]
+            .map(fruit => ({label: fruit, value: fruit}));
+        // const a = (<div/>
+            {/*<div className="dynamic-area">*/}
+                {/*<MultiSelect options={options} placeholder = "Select fruits"/>*/}
+                {/*/!*<input type="text"*!/*/}
+                       {/*/!*id="dynamic-field"*!/*/}
+                       {/*/!*multiple className="multi-select fa"*!/*/}
+                       {/*/!*placeholder="Input..."*!/*/}
+                       {/*/!*onBlur={this.addFeature}/>*!/*/}
+                {/*<ul className="list-group">*/}
+                    {/*{this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}*/}
+                {/*</ul>*/}
+            {/*</div>*/}
+        // );
+        const f = name => { console.log(arguments); return null; };
+        const a = (
             <div className="dynamic-area">
-                <input type="text"
-                       id="dynamic-field"
-                       multiple className="multi-select fa"
-                       placeholder="Input..."
-                       onBlur={this.addFeature}/>
-                <ul className="list-group">
-                    {this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}
-                </ul>
-            </div>
+                <MultiSelect
+                    className="primary-input-field"
+                    options={options}
+                    placeholder="Input"
+                    onKeyboardSelectionFailed={() => {console.log('onKeyboardSelectionFailed'); console.log(arguments); that.state.selectionController.onKeyboardSelectionFailed(arguments)}}
+                    createFromSearch={() => {console.log('onSearchChange'); console.log(arguments); that.state.selectionController.createFromSearch(arguments)}}
+                    onSearchChange={() => {console.log('onSearchChange'); console.log(arguments)}}
+                    onValuesChange={() => {console.log('onValuesChange'); console.log(arguments)}}/>
+        {/*<input type="text"*/}
+        {/*id="dynamic-field"*/}
+        {/*multiple className="multi-select fa"*/}
+        {/*placeholder="Input..."*/}
+        {/*onBlur={this.addFeature}/>*/}
+            <ul className="list-group">
+                {this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}
+            </ul>
+        </div>
         );
+        console.log(a);
+        return a;
     }
 }
 

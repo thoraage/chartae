@@ -6,6 +6,7 @@ import ol_proj from 'ol/proj'
 import proj4 from 'proj4'
 
 import 'bootstrap/dist/css/bootstrap.css'
+import 'react-selectize/dist/index.min.css'
 import 'font-awesome/css/font-awesome.css'
 import './public/css/chartae.css'
 

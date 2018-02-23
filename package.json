@@ -29,6 +29,7 @@
     "react": "^16.1.1",
     "react-bootstrap": "^0.31.5",
     "react-dom": "^16.1.1",
+    "react-selectize": "^3.0.1",
     "url-loader": "^0.6.2"
   },
   "devDependencies": {
