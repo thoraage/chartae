@@ -6,8 +6,8 @@ import ol_proj from 'ol/proj'
 import proj4 from 'proj4'
 
 import 'bootstrap/dist/css/bootstrap.css'
-
 import 'font-awesome/css/font-awesome.css'
+import './public/css/chartae.css'
 
 import MapControlBox from './components/MapControl'
 import Map from './components/Map'
