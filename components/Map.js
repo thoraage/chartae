@@ -93,7 +93,7 @@ export default class Map {
         });
     }
 
-    createLayer() {
+    createLayer(msg, object) {
         const vector = new ol_layer_vector({
             source: new ol_source_vector({
                 features: []
@@ -102,7 +102,9 @@ export default class Map {
         const style = Map.createLineStyle(false);
         vector.setStyle(style);
         this.map.addLayer(vector);
-        PubSub.publish(MapOperations.LAYER_CREATED, vector);
+        const returnObject = object || {};
+        returnObject.layer = vector;
+        PubSub.publish(MapOperations.LAYER_CREATED, returnObject);
     }
 
     static createLineStyle(focus) {

@@ -7,15 +7,17 @@ class StateHandler {
         this.selectedOptions = [];
         this.layers = [];
 
-        PubSub.subscribe(MapOperations.LAYER_CREATED, function(msg, layer) {
-            that.layers.push({ layer: layer, visible: true, name: 'Vector ' + that.layers.length, featureInfos: [] });
+        PubSub.subscribe(MapOperations.LAYER_CREATED, function(msg, object) {
+            const layer = object.layer;
+            const name = object.hidden ? 'Hidden' : 'Vector ' + that.layers.filter(l => !l.hidden).length;
+            that.layers.push({ layer: layer, visible: true, hidden: object.hidden, name: name, featureInfos: [] });
             that.currentLayer = layer;
             component.forceUpdate();
         });
 
         PubSub.subscribe(MapOperations.LAYER_REMOVED, function(msg, value) {
             that.layers = that.layers.filter(layerInfo => layerInfo.layer !== value.layer);
-            if (that.layers.length === 0) {
+            if (that.layers.filter(l => !l.hidden).length === 0) {
                 PubSub.publish(MapOperations.LAYER_CREATE);
             }
             component.forceUpdate();

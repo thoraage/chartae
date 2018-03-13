@@ -122,7 +122,7 @@ class MapControl extends React.Component {
                     promptTextCreator={(label => "Add " + label)}
                 />
                 <ul className="list-group">
-                    {this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}
+                    {this.state.layers.filter(l => !l.hidden).map((layerInfo, n) => layerItem(layerInfo, n))}
                 </ul>
             </div>
         );

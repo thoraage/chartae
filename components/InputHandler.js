@@ -8,6 +8,7 @@ class InputHandler {
         this.isValid = this.isValid.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.createOption = this.createOption.bind(this);
+        PubSub.publish(MapOperations.LAYER_CREATE, { hidden: true });
     }
 
     isValid(value) {
@@ -59,7 +60,12 @@ class InputHandler {
             return;
         }
         if (option[option.length - 1].value === this.cachedValue) {
-            PubSub.publish(MapOperations.FEATURES_ADD, { layer: this.state.currentLayer, feature: this.cachedFeature });
+            const hiddenLayer = this.state.layers.find(l => l.hidden);
+            if (hiddenLayer) {
+                PubSub.publish(MapOperations.FEATURES_ADD, {layer: hiddenLayer.layer, feature: this.cachedFeature});
+            } else {
+                throw "Unable to find hidden layer";
+            }
         }
     }
 }
