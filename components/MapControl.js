@@ -1,49 +1,20 @@
 import React from 'react'
 import PubSub from 'pubsub-js'
+import Select from 'react-select';
+import InputHandler from './InputHandler'
+import StateHandler from './StateHandler'
 
 import * as MapOperations from './MapOperations'
 
 class MapControl extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
-        this.state.layers = [];
+        this.state = new StateHandler(this);
+        this.inputHandler = new InputHandler(this.state);
+        this.handleChange = this.handleChange.bind(this);
         this.addFeature = this.addFeature.bind(this);
-        this.layerCreated = this.layerCreated.bind(this);
-        this.layerVisibleChanged = this.layerVisibleChanged.bind(this);
-        this.featuresAdded = this.featuresAdded.bind(this);
-
-        const that = this;
-        PubSub.subscribe(MapOperations.LAYER_CREATED, this.layerCreated);
-        PubSub.subscribe(MapOperations.LAYER_VISIBLE_CHANGED, this.layerVisibleChanged);
-        PubSub.subscribe(MapOperations.FEATURES_ADDED, this.featuresAdded);
-
-        PubSub.subscribe(MapOperations.LAYER_REMOVED, function(msg, value) {
-            that.state.layers = that.state.layers.filter(layerInfo => layerInfo.layer !== value.layer);
-            if (that.state.layers.length === 0) {
-                PubSub.publish(MapOperations.LAYER_CREATE);
-            }
-            that.forceUpdate();
-        });
-
-        PubSub.subscribe(MapOperations.FEATURE_FOCUS, function(msg, value) {
-            that.state.layers.forEach(layerInfo => {
-                layerInfo.featureInfos.forEach(featureInfo => {
-                    if (featureInfo.feature === value.feature) {
-                        featureInfo.focused = value.on;
-                    }
-                });
-            });
-            that.forceUpdate();
-        });
 
         PubSub.publish(MapOperations.LAYER_CREATE);
-    }
-
-    layerCreated(msg, layer) {
-        this.state.layers.push({ layer: layer, visible: true, name: 'Vector ' + this.state.layers.length, featureInfos: [] });
-        this.state.currentLayer = layer;
-        this.forceUpdate();
     }
 
     addFeature(event) {
@@ -73,27 +44,22 @@ class MapControl extends React.Component {
         PubSub.publish(MapOperations.FEATURES_ADD, { layer: this.state.currentLayer, strings: values });
     }
 
-    featuresAdded(msg, value) {
-        value.features.forEach(feature => {
-            const layerInfo = this.state.layers.find(layerInfo => layerInfo.layer === value.layer);
-            layerInfo.featureInfos.push({ feature: feature, visible: true });
-        });
-        this.forceUpdate();
-    }
-
     static focusFeature(featureInfo, highlight) {
         PubSub.publish(MapOperations.FEATURE_FOCUS, { feature: featureInfo.feature, on: highlight })
     }
 
-    layerVisibleChanged(msg, value) {
-        const layer = this.state.layers.find(layerInfo => value.layer === layerInfo.layer);
+    handleChange(value) {
         console.log(value);
-        console.log(layer);
-        layer.visible = value.on;
+        this.state.selectedOptions = value;
+        console.log(`Selected:`);
+        console.log(arguments);
         this.forceUpdate();
-    }
+    };
 
     render() {
+        // const { selectedOption } = this.state;
+        //const value = selectedOptions && selectedOptions.value;
+
         const that = this;
         function featureItem(featureInfo, n) {
             return <span className={ 'badge badge-pill' + (featureInfo.focused ? ' badge-primary' : ' badge-secondary') } key={n}
@@ -142,11 +108,19 @@ class MapControl extends React.Component {
         }
         return (
             <div className="dynamic-area">
-                <input type="text"
-                       id="dynamic-field"
-                       multiple className="multi-select fa"
-                       placeholder="Input..."
-                       onBlur={this.addFeature}/>
+                <Select.Creatable
+                    multi
+                    name="form-field-name"
+                    value={that.inputHandler.state.selectedOptions}
+                    onChange={(option) => that.inputHandler.handleChange(this, option)}
+                    options={[
+                        { value: 'one', label: 'One' },
+                        { value: 'two', label: 'Two' },
+                    ]}
+                    isValidNewOption={(args) => that.inputHandler.isValid(args.label)}
+                    newOptionCreator={(args) => that.inputHandler.createOption(args.label, args.labelKey, args.valueKey)}
+                    promptTextCreator={(label => "Add " + label)}
+                />
                 <ul className="list-group">
                     {this.state.layers.map((layerInfo, n) => layerItem(layerInfo, n))}
                 </ul>

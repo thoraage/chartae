@@ -7,6 +7,7 @@ import proj4 from 'proj4'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
+import 'react-select/dist/react-select.css'
 import './public/css/chartae.css'
 
 import MapControlBox from './components/MapControl'

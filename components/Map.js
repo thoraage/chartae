@@ -120,21 +120,24 @@ export default class Map {
     }
 
     addFeatures(msg, value) {
+        console.log("addFeatures");
+        console.log(value);
         const format = new ol_format_wkt();
-        const features = value.strings.map(value => {
-            const feature = format.readFeature(value, {
-                dataProjection:
-                    'EPSG:32633',
-                // 'EPSG:4326',
-                //  'EPSG:3857',
-                //  'EPSG:3857',
-                featureProjection:
-                //                'EPSG:32633'
-                    'EPSG:3857'
-            });
-            console.log(feature);
-            return feature;
-        });
+        const features = [value.feature];
+        //     value.strings.map(value => {
+        //     const feature = format.readFeature(value, {
+        //         dataProjection:
+        //             'EPSG:32633',
+        //         // 'EPSG:4326',
+        //         //  'EPSG:3857',
+        //         //  'EPSG:3857',
+        //         featureProjection:
+        //         //                'EPSG:32633'
+        //             'EPSG:3857'
+        //     });
+        //     console.log(feature);
+        //     return feature;
+        // });
         value.layer.getSource().addFeatures(features);
         this.map.changed();
         // this.state.map.setView( new ol.View({
